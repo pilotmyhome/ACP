@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+pydantic
+psycopg2-binary
+greenlet!=0.4.17
