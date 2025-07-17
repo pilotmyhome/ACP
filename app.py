@@ -52,6 +52,10 @@ async def lifespan(app: FastAPI):
 
 app.lifespan = lifespan
 
+@app.get("/")
+async def root():
+    return {"message": "Backend is live - use /docs for API testing"}
+
 class ToggleRequest(BaseModel):
     post_id: str
     user_id: str
