@@ -1,18 +1,17 @@
 from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime
+from contextlib import asynccontextmanager
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 from pydantic import BaseModel
-import asyncio
 from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
 
 app = FastAPI()
 
-# Replace with your PostgreSQL URL (e.g., from Supabase)
-DATABASE_URL = "postgresql+asyncpg://your_user:your_pass@your_host:5432/your_db"
+# Replace with your Supabase PostgreSQL URL
+DATABASE_URL = "postgresql+asyncpg://postgres:[PASSWORD]@aws-0-us-east-2.pooler.supabase.com:6543/postgres"
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -45,11 +44,13 @@ class Comment(Base):
     text = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-async def create_db():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    yield
 
-asyncio.run(create_db())
+app.lifespan = lifespan
 
 class ToggleRequest(BaseModel):
     post_id: str
